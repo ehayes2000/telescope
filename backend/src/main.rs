@@ -69,11 +69,16 @@ async fn find<'e, D>(phrase: String, db: D) -> Result<Vec<String>>
 where
     D: Executor<'e, Database = Sqlite>,
 {
-    let rows = sqlx::query("SELECT id FROM text_index WHERE body MATCH $1")
-        .bind(phrase)
-        .fetch_all(db)
-        .await
-        .map_err(Error::from)?;
+    let rows = sqlx::query(
+        r#"SELECT id FROM text_index
+        WHERE body MATCH $1
+        ORDER BY rank
+        "#,
+    )
+    .bind(phrase)
+    .fetch_all(db)
+    .await
+    .map_err(Error::from)?;
     let v = rows
         .into_iter()
         .map(|row| row.get("id"))
