@@ -1,23 +1,74 @@
 use anyhow::{Error, Result};
+use axum::extract::{Query, State};
+use axum::http::{Method, StatusCode};
+use axum::routing::get;
+use axum::serve::Listener;
+use axum::{Json, Router};
+use serde::{Deserialize, Serialize};
 use sqlx::Connection;
+use sqlx::Executor;
 use sqlx::Row;
-use sqlx::{SqliteConnection, sqlite::SqliteConnectOptions};
+use sqlx::{SqliteConnection, SqlitePool, sqlite::Sqlite, sqlite::SqliteConnectOptions};
+use std::sync::Arc;
+use tower_http::cors::{Any, CorsLayer};
 
 const DB: &str = "search_index/text.db";
+
+#[derive(Clone)]
+struct Context {
+    connection: Arc<SqlitePool>,
+}
 
 #[tokio::main]
 async fn main() {
     let options = SqliteConnectOptions::new().filename(DB);
-    let mut db = SqliteConnection::connect_with(&options)
+    let db = SqlitePool::connect_with(options)
         .await
         .expect("db connection");
-    let mut args = std::env::args();
-    let search_phrase = args.nth(1).expect("search phrase");
-    let studies = find(search_phrase, &mut db).await.expect("find result");
-    println!("{:#?}", studies);
+
+    let context = Context {
+        connection: Arc::new(db),
+    };
+
+    let cors = CorsLayer::new()
+        .allow_methods([Method::GET, Method::POST])
+        .allow_origin(Any);
+
+    let app = Router::new()
+        .route("/find", get(handle_find))
+        .with_state(context)
+        .layer(cors);
+
+    let listener = tokio::net::TcpListener::bind("0.0.0.0:5050")
+        .await
+        .expect("tcp listener");
+    println!("listening on 5050");
+    axum::serve(listener, app).await.expect("server")
 }
 
-async fn find(phrase: String, db: &mut SqliteConnection) -> Result<Vec<String>> {
+#[derive(Debug, Clone, Deserialize)]
+#[serde(rename_all = "snake_case")]
+struct SearchQueryParam {
+    pub phrase: String,
+}
+
+async fn handle_find(
+    State(context): State<Context>,
+    Query(params): Query<SearchQueryParam>,
+) -> Result<Json<Vec<String>>, StatusCode> {
+    find(params.phrase, &*context.connection)
+        .await
+        .map_err(|err| {
+            eprintln!("something went wrong {:#?}", err);
+            StatusCode::INTERNAL_SERVER_ERROR
+        })
+        .map(Json)
+}
+
+async fn find<'e, D>(phrase: String, db: D) -> Result<Vec<String>>
+where
+    D: Executor<'e, Database = Sqlite>,
+{
     let rows = sqlx::query("SELECT id FROM text_index WHERE body MATCH $1")
         .bind(phrase)
         .fetch_all(db)

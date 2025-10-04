@@ -7,5 +7,8 @@ edition = "2024"
 anyhow = "1.0.100"
 axum = "0.8.6"
 pdf-extract = "0.10.0"
-sqlx = { version = "0.8.6", features = [ "sqlite"] }
-tokio = { version="1.47.1", features = ["macros", "rt", "rt-multi-thread"]}
+serde = "1.0.228"
+serde_json = "1.0.145"
+sqlx = { version = "0.8.6", features = [ "sqlite", "runtime-tokio"] }
+tokio = { version="1.47.1", features = ["full"]}
+tower-http = {version = "0.6.6", features = ["cors"]}
