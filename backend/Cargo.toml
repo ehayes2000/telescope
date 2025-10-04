@@ -1,0 +1,11 @@
+[package]
+name = "spaceapp"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+anyhow = "1.0.100"
+axum = "0.8.6"
+pdf-extract = "0.10.0"
+sqlx = { version = "0.8.6", features = [ "sqlite"] }
+tokio = { version="1.47.1", features = ["macros", "rt", "rt-multi-thread"]}

@@ -1,0 +1,4 @@
+.DS_Store
+backend/scripts/out
+backend/search_index
+backend/target
