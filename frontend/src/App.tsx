@@ -1,26 +1,14 @@
 import { createSignal, For, Show } from "solid-js";
-import { err, ok, type Result } from "./types";
+import {
+  type Author,
+	type Document,
+	type SearchArgs,
+	type SearchResult,
+	search,
+} from "./server";
 import { useDebounce } from "./util";
 
-const BASE_URL =
-	import.meta.env.MODE === "development" ? "http://localhost:5050" : "todo";
-
-type DocumentId = string;
-type SearchResult = Result<DocumentId[], string>;
-type SearchArgs = { phrase: string };
-
 const [searchResults, setSearchResults] = createSignal<SearchResult>();
-
-async function search(args: SearchArgs): Promise<SearchResult> {
-	try {
-		const response = await fetch(`${BASE_URL}/find?phrase=${args.phrase}`);
-		if (!response.ok) return err(response.statusText);
-		const docs: DocumentId[] = await response.json();
-		return ok(docs);
-	} catch (e) {
-		return err(JSON.stringify(e));
-	}
-}
 
 const setSearch = async (args: SearchArgs) => {
 	if (args.phrase.length === 0) return;
@@ -32,7 +20,7 @@ const debouncedSearch = useDebounce(setSearch, 300);
 
 function App() {
 	return (
-		<div class="w-screen h-screen bg-black">
+		<div class="min-h-screen max-w-screen bg-black flex items-center flex-col overflow-x-clip p-2">
 			<Search />
 			<Results />
 		</div>
@@ -44,7 +32,8 @@ function Search() {
 		<div>
 			<input
 				type="text"
-				class="border border-green-400 px-2 py-1 focus:outline-none"
+				placeholder="Search"
+				class="border border-green-400 px-2 py-1 focus:outline-none w-[400px]"
 				onKeyUp={(e) => debouncedSearch({ phrase: e.currentTarget.value })}
 			/>
 		</div>
@@ -61,14 +50,48 @@ function Results() {
 		return;
 	};
 	return (
-		<div>
+		<div class="flex flex-col gap-2 p-2 overflow-clip">
 			<Show when={results()}>
 				{(results) => (
-					<div>
-						<For each={results().data}>{(data) => <div> {data} </div>}</For>
-					</div>
+					<For each={results().data}>
+							{(data) => <FoundDoc document={data} />}
+					</For>
 				)}
 			</Show>
+		</div>
+	);
+}
+
+function FoundDoc(props: { document: Document }) {
+  const formatDate = (s: string): string => {
+    const date = new Date(s);
+    const day = date.getDate();
+    const formatted = new Intl.DateTimeFormat('en-US', {
+      month: 'long',
+      year: 'numeric'
+    }).format(date).replace(/(\w+) (\d+)/, `$1 ${day}, $2`);
+
+    return formatted;
+  }
+
+  const Author = (p: { name: Author })  => <span class="px-1 py-0.5 bg-gray-900 flex-0">{p.name.surname}</span>
+	return (
+    <div class="border border-green-400 py-1 px-2 max-w-[400px] flex flex-col gap-1 hover:bg-green-400/20"
+      onClick={() => window.open(`https://pmc.ncbi.nlm.nih.gov/articles/${props.document.id}/`)}
+		>
+			<h1 class="text-lg text-wrap px-1">{props.document.metadata.title}</h1>
+      <h2 class="text-sm font-mono px-1">{formatDate(props.document.metadata.publishedDate)}</h2>
+
+      <div class="flex items-end w-full justify-between">
+
+      <div class="text-sm flex gap-1 flex-wrap">
+        {/*{props.document.metadata.authors.map(name => <span class="bg-gray">{name.surname}</span>)}*/}
+        <For each={props.document.metadata.authors}>
+          {author => <Author name={author} />}
+        </For>
+      </div>
+      <footer class="text-right font-mono text-xs italic py-0.5 px-1">{props.document.id}</footer>
+      </div>
 		</div>
 	);
 }

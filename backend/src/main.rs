@@ -2,13 +2,12 @@ use anyhow::{Error, Result};
 use axum::extract::{Query, State};
 use axum::http::{Method, StatusCode};
 use axum::routing::get;
-use axum::serve::Listener;
 use axum::{Json, Router};
 use serde::{Deserialize, Serialize};
-use sqlx::Connection;
+use serde_json::Value;
 use sqlx::Executor;
 use sqlx::Row;
-use sqlx::{SqliteConnection, SqlitePool, sqlite::Sqlite, sqlite::SqliteConnectOptions};
+use sqlx::{SqlitePool, sqlite::Sqlite, sqlite::SqliteConnectOptions};
 use std::sync::Arc;
 use tower_http::cors::{Any, CorsLayer};
 
@@ -55,7 +54,7 @@ struct SearchQueryParam {
 async fn handle_find(
     State(context): State<Context>,
     Query(params): Query<SearchQueryParam>,
-) -> Result<Json<Vec<String>>, StatusCode> {
+) -> Result<Json<Vec<Document>>, StatusCode> {
     find(params.phrase, &*context.connection)
         .await
         .map_err(|err| {
@@ -65,15 +64,22 @@ async fn handle_find(
         .map(Json)
 }
 
-async fn find<'e, D>(phrase: String, db: D) -> Result<Vec<String>>
+#[derive(Serialize, Deserialize, Debug, Clone)]
+struct Document {
+    pub id: String,
+    pub metadata: Value,
+}
+
+async fn find<'e, D>(phrase: String, db: D) -> Result<Vec<Document>>
 where
     D: Executor<'e, Database = Sqlite>,
 {
     let rows = sqlx::query(
-        r#"SELECT id FROM text_index
-        WHERE body MATCH $1
-        ORDER BY rank
-        "#,
+        r#"SELECT m.id, m.metadata
+        FROM text_index i
+        JOIN metadata m ON i.id = m.id
+        WHERE i.body MATCH $1
+        ORDER BY i.rank"#,
     )
     .bind(phrase)
     .fetch_all(db)
@@ -81,7 +87,10 @@ where
     .map_err(Error::from)?;
     let v = rows
         .into_iter()
-        .map(|row| row.get("id"))
-        .collect::<Vec<String>>();
+        .map(|row| Document {
+            id: row.get("id"),
+            metadata: serde_json::from_str(row.get("metadata")).expect("metadata json"),
+        })
+        .collect::<Vec<Document>>();
     Ok(v)
 }

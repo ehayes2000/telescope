@@ -9,7 +9,8 @@
 	},
 	"scripts": {
 		"download": "bun run src/init.ts && bun run src/download.ts > download_log.txt",
-		"index": "bun run src/build_index.ts"
+		"index": "bun run src/build_index.ts",
+		"metadata": "bun run src/build_metadata.ts"
 	},
 	"dependencies": {
 		"fast-xml-parser": "^5.3.0"
