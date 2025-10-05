@@ -1,0 +1,54 @@
+// Folder-specific settings
+//
+// For a full list of overridable settings, and general information on folder-specific settings,
+// see the documentation: https://zed.dev/docs/configuring-zed#settings-files
+{
+  "languages": {
+    "TypeScript": {
+      "formatter": {
+        "external": {
+          "command": "bunx",
+          "arguments": [
+            "@biomejs/biome",
+            "format",
+            "--stdin-file-path",
+            "{buffer_path}"
+          ]
+        }
+      }
+    },
+    "TSX": {
+      "formatter": {
+        "external": {
+          "command": "bunx",
+          "arguments": [
+            "@biomejs/biome",
+            "format",
+            "--stdin-file-path",
+            "{buffer_path}"
+          ]
+        }
+      }
+    },
+    "JavaScript": {
+      "formatter": {
+        "external": {
+          "command": "bunx",
+          "arguments": [
+            "@biomejs/biome",
+            "format",
+            "--stdin-file-path",
+            "{buffer_path}"
+          ]
+        }
+      }
+    }
+  },
+  "lsp": {
+    "biome": {
+      "settings": {
+        "config_path": "./frontend/biome.jsonc"
+      }
+    }
+  }
+}

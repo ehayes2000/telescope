@@ -9,7 +9,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@solid-primitives/storage": "^4.3.3",
     "@tailwindcss/vite": "^4.1.14",
+    "openai": "^6.1.0",
     "solid-js": "^1.9.9",
     "tailwindcss": "^4.1.14"
   },

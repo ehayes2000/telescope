@@ -1,8 +1,11 @@
 use crate::config::WS_PORT;
+use axum::http::HeaderMap;
 use futures::{SinkExt, StreamExt};
+use reqwest_eventsource::Event;
+use reqwest_eventsource::RequestBuilderExt;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
-use serde_json::json;
+use std::collections::HashMap;
 use tokio::net::TcpStream;
 use tokio::select;
 use tokio::sync::mpsc::{UnboundedSender, unbounded_channel};
@@ -37,7 +40,7 @@ pub enum IncomingMessage {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ProxyRequest {
-    pub host: String,
+    pub url: String,
     pub headers: Vec<(String, String)>,
     pub body: Value,
 }
@@ -47,6 +50,10 @@ pub struct ProxyRequest {
 pub enum OutgoingMessage {
     Proxy(ProxyResponse),
     Err { reason: String },
+}
+
+fn err<T: Into<String>>(s: T) -> OutgoingMessage {
+    OutgoingMessage::Err { reason: s.into() }
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -103,7 +110,68 @@ async fn handle_connection(mut ws: WebSocketStream<TcpStream>) {
 }
 
 async fn handle_message(sender: UnboundedSender<OutgoingMessage>, message: IncomingMessage) {
-    println!("HANDLE MESSAGE {:?}", message);
-    let json = json! ({"hehe": "xd"});
-    let c = sender.send(OutgoingMessage::Proxy(ProxyResponse { data: json }));
+    match message {
+        IncomingMessage::Proxy(proxy) => handle_proxy(sender, proxy).await,
+    }
+}
+
+const ALLOWED_HOSTS: [&str; 1] = ["https://api.openai.com/v1/completions"];
+
+async fn handle_proxy(tx: UnboundedSender<OutgoingMessage>, request: ProxyRequest) {
+    if ALLOWED_HOSTS.contains(&request.url.as_str()) {
+        let _ = tx.send(err("unknown host"));
+        return;
+    }
+
+    let map = request
+        .headers
+        .clone()
+        .into_iter()
+        .collect::<HashMap<_, _>>();
+    let Ok(headers): Result<HeaderMap, axum::http::Error> = HeaderMap::try_from(&map) else {
+        let _ = tx.send(err("unknown headers"));
+        return;
+    };
+
+    let mut event_source = reqwest::Client::new()
+        .post(&request.url)
+        .headers(headers)
+        .json(&request.body)
+        .eventsource()
+        .expect("event source");
+
+    while let Some(ev) = event_source.next().await {
+        match ev {
+            Err(e) => {
+                if let Err(_) = tx.send(err("bad response")) {
+                    eprintln!("{:?}", e);
+                    return;
+                }
+            }
+            Ok(event) => match event {
+                Event::Message(message) => {
+                    if message.data == "[DONE]" {
+                        break;
+                    }
+
+                    match serde_json::from_str::<Value>(&message.data) {
+                        Ok(okgoodyes) => {
+                            if tx
+                                .send(OutgoingMessage::Proxy(ProxyResponse { data: okgoodyes }))
+                                .is_err()
+                            {
+                                return;
+                            }
+                        }
+                        Err(_) => {
+                            if tx.send(err("unexpected response")).is_err() {
+                                return;
+                            }
+                        }
+                    }
+                }
+                Event::Open => continue,
+            },
+        }
+    }
 }

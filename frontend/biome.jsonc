@@ -1,0 +1,24 @@
+{
+  "formatter": {
+    "indentStyle": "space", // default is `tab`
+    "lineWidth": 100, // default is `80`
+  },
+  "javascript": {
+    "formatter": {
+      "quoteStyle": "double", // default is `double`
+      "lineWidth": 120, // override `formatter.lineWidth`
+    },
+  },
+  "json": {
+    "formatter": {
+      "enabled": false,
+    },
+  },
+  "linter": {
+    "rules": {
+      "a11y": {
+        "useKeyWithClickEvents": "off"
+      }
+    }
+  }
+}
