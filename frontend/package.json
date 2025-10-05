@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@solid-primitives/storage": "^4.3.3",
+    "@solidjs/router": "^0.15.3",
     "@tailwindcss/vite": "^4.1.14",
     "openai": "^6.1.0",
     "rehype-sanitize": "^6.0.0",

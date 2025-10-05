@@ -30,14 +30,14 @@ export function Chat() {
   }));
 
   return (
-  <div class="max-h-screen flex-1 flex flex-col justify-between py-2 items-center">
+  <div class="min-h-screen max-h-screen flex flex-col justify-between py-2 items-center">
     <div class="w-[400px]">
       <ApiKey />
     </div>
-    <div class="flex justify-center min-h-0 flex-1 overflow-y-auto w-screen items-start scroll-smooth"
+    <div class="flex justify-center min-h-0 flex-1 overflow-y-scroll w-screen items-start scroll-smooth pl-[22px]"
       ref={scrollable}
     >
-      <div class="w-[380px] py-2">
+      <div class="w-[400px] py-2">
         <ChatMessages messages={messages()}/>
           <Show when={stream()}>
             {stream=> <ChatStream stream={stream()}/>}
@@ -156,11 +156,9 @@ function AssistantMessageComponent(props: { message: AssistantMessage }) {
 }
 
 function ToolResponseMessage(props: { message: ToolMessage }) {
+  const count = (props.message.content?.match(/"id": /g) || []).length ?? 0
   return <div class="text-sm !text-green-400 font-mono">
-    Found
-    <pre>
-      {props.message.content}
-    </pre>
+    Found [{ count }] Studies
   </div>
 }
 

@@ -1,0 +1,104 @@
+import { createSignal, For, Show } from "solid-js";
+import {
+	type Author,
+	type Document,
+	type SearchArgs,
+	type SearchResult,
+	search,
+} from "./server/search";
+import { useDebounce } from "./util";
+
+const [searchResults, setSearchResults] = createSignal<SearchResult>();
+
+const setSearch = async (args: SearchArgs) => {
+	if (args.phrase.length === 0) return;
+	const r = await search(args);
+	setSearchResults(r);
+};
+
+const debouncedSearch = useDebounce(setSearch, 300);
+
+export function SearchPage() {
+	return (
+		<div class="min-h-scsreen max-h-screen flex items-center flex-col w-full">
+			<Search />
+			<Results />
+		</div>
+	);
+}
+
+function Search() {
+	return (
+		<div class="py-2">
+			<input
+				type="text"
+				placeholder="Search"
+				class="border border-green-400 px-2 py-1 focus:outline-none w-[400px] text-sm"
+				onKeyUp={(e) => debouncedSearch({ phrase: e.currentTarget.value })}
+			/>
+		</div>
+	);
+}
+
+function Results() {
+	const results = () => {
+		const r = searchResults();
+		if (!r) return;
+		if (r.type === "ok") {
+			return r;
+		}
+		return;
+	};
+	return (
+		<div class="flex flex-col gap-2 p-2 overflow-clip text-sm flex-1 overflow-y-scroll overflow-x-clip w-full items-center pl-[22px]">
+			<Show when={results()}>
+				{(results) => (
+					<For each={results().data}>
+						{(data) => <FoundDoc document={data} />}
+					</For>
+				)}
+			</Show>
+		</div>
+	);
+}
+
+function FoundDoc(props: { document: Document }) {
+	const formatDate = (s: string): string => {
+		const date = new Date(s);
+		const day = date.getDate();
+		const formatted = new Intl.DateTimeFormat("en-US", {
+			month: "long",
+			year: "numeric",
+		})
+			.format(date)
+			.replace(/(\w+) (\d+)/, `$1 ${day}, $2`);
+
+		return formatted;
+	};
+
+	const Author = (p: { name: Author }) => (
+		<span class="px-1 py-0.5 bg-gray-900 flex-0">{p.name.surname}</span>
+	);
+	return (
+		<div
+			class="border border-green-400 py-1 px-2 max-w-[400px] flex flex-col gap-1 hover:bg-green-400/20"
+			onClick={() => window.open(`https://pmc.ncbi.nlm.nih.gov/articles/${props.document.id}/`)}
+		>
+			<h1 class="text-lg text-wrap px-1">{props.document.metadata.title}</h1>
+			<h2 class="text-sm font-mono px-1">
+				{formatDate(props.document.metadata.publishedDate)}
+			</h2>
+
+			<div class="flex items-end w-full justify-between">
+				<div class="text-sm flex gap-1 flex-wrap">
+					<For each={props.document.metadata.authors}>
+						{(author) => <Author name={author} />}
+					</For>
+				</div>
+				<footer class="text-right font-mono text-xs italic py-0.5 px-1">
+					{props.document.id}
+				</footer>
+			</div>
+		</div>
+	);
+}
