@@ -6,8 +6,8 @@ import {
 	type SearchResult,
 	search,
 } from "./server";
-import { apiKey, sendMessage, keyErr, setApiKey } from "./server/chat";
 import { useDebounce } from "./util";
+import { Chat } from "./Chat";
 
 const [searchResults, setSearchResults] = createSignal<SearchResult>();
 
@@ -21,7 +21,7 @@ const debouncedSearch = useDebounce(setSearch, 300);
 
 function App() {
 	return (
-		<div class="min-h-screen max-w-screen bg-black flex items-center flex-col overflow-x-clip p-2">
+		<div class="min-h-screen min-w-screen max-w-screen bg-black flex items-center flex-col overflow-x-clip">
 			{/*<Search />
 			<Results />*/}
 			<Chat />
@@ -102,38 +102,6 @@ function FoundDoc(props: { document: Document }) {
 					{props.document.id}
 				</footer>
 			</div>
-		</div>
-	);
-}
-
-function Chat() {
-	return <ApiKey />;
-
-}
-
-function ChatInput() {
-
-}
-
-function ApiKey() {
-	const secretKey = () => {
-		const v = apiKey();
-		if (!v) return "";
-		return Array.from(v)
-			.map((_) => "*")
-			.join("");
-	};
-
-	return (
-		<div>
-			<div class="!text-green-400 text-xs font-mono"> API KEY</div>
-			<input
-				class="px-2 py-1 focus:outline-none border border-green-400 w-[400px] h-[40px] text-sm italic font-mono"
-				value={secretKey()}
-				placeholder="OPEN_AI_API_KEY"
-				type="text"
-				onInput={(e) => setApiKey(e.currentTarget.value)}
-			/>
 		</div>
 	);
 }

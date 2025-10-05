@@ -3,7 +3,7 @@ import OpenAI from "openai";
 import type { ChatCompletionCreateParamsStreaming } from "openai/resources.js";
 import { createEffect, createSignal } from "solid-js";
 import type { MessageStream } from "./stream";
-import { TOOLS } from "./prompt";
+import { SYSTEM_PROMPT, TOOLS } from "./prompt";
 import type { ChatCompletionChunk } from "openai/resources";
 
 export type ChatMessage =
@@ -16,7 +16,12 @@ export const [apiKey, setApiKey] = makePersisted(createSignal<string>(), {
 
 export const [keyErr, setKeyErr] = createSignal(false);
 const [stream, setStream] = createSignal<MessageStream<AssistantMessage>>();
-const [messages, setMessages] = createSignal<ChatMessage[]>([]);
+const [messages, setMessages] = makePersisted(createSignal<ChatMessage[]>([
+ {role: "system", content: SYSTEM_PROMPT}
+]), { name: "CHAT_MESSAGES" });
+
+export const chatStream = stream;
+export const chatMessages = messages;
 
 const useClient = () => {
 	const key = apiKey();
@@ -55,9 +60,6 @@ export function sendMessage(message: string) {
 	if (newStream) setStream(newStream);
 }
 
-createEffect(() => {
-  console.log(stream()?.data())
-})
 
 function chat(
 	args: ChatCompletionCreateParamsStreaming,
@@ -144,3 +146,8 @@ function chat(
 		stop: stopStream,
 	};
 }
+
+
+[
+  {"role":"user","content":"PMC4136787 Link me this study"},
+  {"role":"assistant","content":"","tool_calls":[{"id":"call_mOclPjEPZrQaEhj6pyurWyFs","type":"function","function":{"name":"read_document","arguments":"{\n  \"id\": \"PMC4136787\"\n}"}}]},{"role":"user","content":"hello"}]

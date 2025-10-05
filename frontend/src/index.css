@@ -1,5 +1,160 @@
 @import "tailwindcss";
 
 * {
+    --scroll-color: color-mix(
+        in oklab,
+        var(--color-green-400) /* oklch(79.2% 0.209 151.711) = #05df72 */ 20%,
+        transparent
+    );
     color: white;
+    scrollbar-color: var(--scroll-color) transparent;
+}
+
+/* Written by AI */
+.assistant-message {
+    /* Headings - h1 is 2xl (largest) */
+    h1 {
+        font-size: 1.5rem;
+        line-height: 2rem;
+        font-weight: 700;
+        margin-top: 1.5rem;
+        margin-bottom: 0.75rem;
+    }
+
+    h2 {
+        font-size: 1.25rem;
+        line-height: 1.75rem;
+        font-weight: 600;
+        margin-top: 1.25rem;
+        margin-bottom: 0.5rem;
+    }
+
+    h3 {
+        font-size: 1.125rem;
+        line-height: 1.75rem;
+        font-weight: 600;
+        margin-top: 1rem;
+        margin-bottom: 0.5rem;
+    }
+
+    /* Paragraphs */
+    p {
+        margin-bottom: 1rem;
+    }
+
+    /* Lists */
+    ul,
+    ol {
+        margin-left: 1.5rem;
+        margin-bottom: 1rem;
+    }
+
+    ul {
+        list-style-type: disc;
+    }
+
+    ol {
+        list-style-type: decimal;
+    }
+
+    li {
+        margin-bottom: 0.25rem;
+    }
+
+    /* Nested lists */
+    ul ul,
+    ol ol,
+    ul ol,
+    ol ul {
+        margin-top: 0.25rem;
+        margin-bottom: 0.25rem;
+    }
+
+    /* Links - text-green-400 */
+    a {
+        color: #4ade80;
+        text-decoration: underline;
+    }
+
+    a:hover {
+        color: #22c55e; /* text-green-500 */
+    }
+
+    /* Inline code - monospace */
+    code {
+        font-family:
+            ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+            "Liberation Mono", "Courier New", monospace;
+        background-color: rgba(156, 163, 175, 0.1); /* gray-400/10 */
+        padding: 0.125rem 0.25rem;
+        border-radius: 0.25rem;
+        font-size: 0.875em;
+    }
+
+    /* Code blocks */
+    pre {
+        background-color: rgba(31, 41, 55, 0.5); /* gray-800/50 */
+        padding: 1rem;
+        border-radius: 0.375rem;
+        overflow-x: auto;
+        margin-bottom: 1rem;
+    }
+
+    pre code {
+        background-color: transparent;
+        padding: 0;
+        font-size: 0.875rem;
+        line-height: 1.5rem;
+    }
+
+    /* Blockquotes */
+    blockquote {
+        border-left: 4px solid #4ade80; /* green-400 */
+        padding-left: 1rem;
+        margin-left: 0;
+        margin-bottom: 1rem;
+        color: #9ca3af; /* gray-400 */
+        font-style: italic;
+    }
+
+    /* Bold */
+    strong {
+        font-weight: 700;
+    }
+
+    /* Italic */
+    em {
+        font-style: italic;
+    }
+
+    /* Images */
+    img {
+        max-width: 100%;
+        height: auto;
+        margin-bottom: 1rem;
+    }
+
+    /* Horizontal rule */
+    hr {
+        border: none;
+        border-top: 1px solid #4b5563; /* gray-600 */
+        margin: 1.5rem 0;
+    }
+}
+
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--scroll-color);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--scroll-color);
 }
