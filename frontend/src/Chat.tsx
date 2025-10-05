@@ -3,10 +3,11 @@ import rehypeStringify from 'rehype-stringify'
 import remarkParse from 'remark-parse'
 import remarkRehype from 'remark-rehype'
 import {unified} from 'unified'
-import { type AssistantMessage, type ChatMessage } from './server/chat'
+import { type AssistantMessage, type ChatMessage, type ToolMessage } from './server/chat'
 import { on, Show, For, Switch, Match, createSignal, createEffect } from 'solid-js'
 import { ready, apiKey, sendMessage, setApiKey, stream, messages} from "./server/chat";
 import type { MessageStream } from './server/chat'
+import { RenderToolCall } from './server/chat'
 
 
 const processor= unified()
@@ -149,11 +150,18 @@ function AssistantMessageComponent(props: { message: AssistantMessage }) {
         }
       </Show>
       <For each={props.message.tool_calls ?? []}>
-        {call => {
-
-        }}
+        {call => <RenderToolCall tool={call} />}
       </For>
   </div>);
+}
+
+function ToolResponseMessage(props: { message: ToolMessage }) {
+  return <div class="text-sm !text-green-400 font-mono">
+    Found
+    <pre>
+      {props.message.content}
+    </pre>
+  </div>
 }
 
 
@@ -173,8 +181,8 @@ function ChatMessages(props: { messages: ChatMessage[] }) {
           <Match when={message.role === "assistant" && message}>
               {message => <AssistantMessageComponent message={message()} />}
           </Match>
-          <Match when={message.role === "tool"}>
-            <div> tool call</div>
+          <Match when={message.role === "tool" && message}>
+              {message => <ToolResponseMessage message={message()} />}
           </Match>
         </Switch>
       )}
