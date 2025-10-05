@@ -1,4 +1,4 @@
-import { err, ok, type Result } from "./types";
+import { err, ok, type Result } from "../types";
 
 const BASE_URL =
 	import.meta.env.MODE === "development" ? "http://localhost:5050" : "todo";

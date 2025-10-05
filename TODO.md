@@ -7,8 +7,8 @@
 # Version 1 - Web Search
 
 - [x] Web search
-  - [ ] full text search web frontend
-  - [ ] return/render study name + metadata
+  - [x] full text search web frontend
+  - [x] return/render study name + metadata
 
 # Version 2 - AI
 

@@ -11,6 +11,11 @@ use sqlx::{SqlitePool, sqlite::Sqlite, sqlite::SqliteConnectOptions};
 use std::sync::Arc;
 use tower_http::cors::{Any, CorsLayer};
 
+mod config;
+mod websocket;
+
+use config::PORT;
+
 const DB: &str = "search_index/text.db";
 
 #[derive(Clone)]
@@ -38,7 +43,9 @@ async fn main() {
         .with_state(context)
         .layer(cors);
 
-    let listener = tokio::net::TcpListener::bind("0.0.0.0:5050")
+    let _handle = tokio::spawn(websocket::socket_server());
+
+    let listener = tokio::net::TcpListener::bind(format!("0.0.0.0:{}", PORT))
         .await
         .expect("tcp listener");
     println!("listening on 5050");
