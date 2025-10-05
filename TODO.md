@@ -12,9 +12,10 @@
 
 # Version 2 - AI
 
-- [ ] An AI frontend
+- [x] An AI frontend
   - [ ] include docs in context
-  - [ ] AI can do a text search
+  - [x] AI can do a text search
+  - [ ] Reset chat history
 
 # Version 3 - Deploy
 
