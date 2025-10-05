@@ -10,6 +10,7 @@ use sqlx::Row;
 use sqlx::{SqlitePool, sqlite::Sqlite, sqlite::SqliteConnectOptions};
 use std::sync::Arc;
 use tower_http::cors::{Any, CorsLayer};
+use tower_http::services::ServeDir;
 
 mod config;
 mod websocket;
@@ -39,7 +40,8 @@ async fn main() {
         .allow_origin(Any);
 
     let app = Router::new()
-        .route("/find", get(handle_find))
+        .route("/api/find", get(handle_find))
+        .fallback_service(ServeDir::new("static"))
         .with_state(context)
         .layer(cors);
 

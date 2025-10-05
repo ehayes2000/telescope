@@ -1,7 +1,7 @@
 import { err, ok, type Result } from "../types";
 
 const BASE_URL =
-	import.meta.env.MODE === "development" ? "http://localhost:5050" : "todo";
+	import.meta.env.MODE === "development" ? "http://localhost:5050" : "";
 
 export interface Author {
 	surname: string;
@@ -24,7 +24,7 @@ export type SearchArgs = { phrase: string };
 
 export async function search(args: SearchArgs): Promise<SearchResult> {
 	try {
-		const response = await fetch(`${BASE_URL}/find?phrase=${args.phrase}`);
+		const response = await fetch(`${BASE_URL}/api/find?phrase=${args.phrase}`);
 		if (!response.ok) return err(response.statusText);
 		const docs: Document[] = await response.json();
 		return ok(docs);
