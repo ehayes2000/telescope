@@ -5,7 +5,7 @@ import {
 	type SearchArgs,
 	type SearchResult,
 	search,
-} from "./server";
+} from "./server/search";
 import { useDebounce } from "./util";
 import { Chat } from "./Chat";
 

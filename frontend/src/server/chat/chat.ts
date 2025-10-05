@@ -1,4 +1,3 @@
-import { makePersisted } from "@solid-primitives/storage";
 import OpenAI from "openai";
 import type { ChatCompletionCreateParamsStreaming } from "openai/resources.js";
 import { createEffect, createSignal } from "solid-js";
@@ -9,19 +8,13 @@ import type { ChatCompletionChunk } from "openai/resources";
 export type ChatMessage =
 	ChatCompletionCreateParamsStreaming["messages"][number];
 export type AssistantMessage = Extract<ChatMessage, { role: "assistant" }>;
+export type ToolMessage = Extract<ChatMessage, { role: "tool" }>;
 
-export const [apiKey, setApiKey] = makePersisted(createSignal<string>(), {
-	name: "OPENAI_API_KEY",
-});
+export type ToolCalls = NonNullable<AssistantMessage['tool_calls']>
+export type ToolCall = ToolCalls[number];
+export type ToolDelta = ChatCompletionChunk.Choice.Delta.ToolCall
 
-export const [keyErr, setKeyErr] = createSignal(false);
-const [stream, setStream] = createSignal<MessageStream<AssistantMessage>>();
-const [messages, setMessages] = makePersisted(createSignal<ChatMessage[]>([
- {role: "system", content: SYSTEM_PROMPT}
-]), { name: "CHAT_MESSAGES" });
-
-export const chatStream = stream;
-export const chatMessages = messages;
+import { apiKey, setKeyErr, stream, setStream, messages,setMessages} from "./signals";
 
 const useClient = () => {
 	const key = apiKey();
@@ -49,17 +42,28 @@ createEffect(() => {
   setStream(undefined)
 });
 
+const model: ChatCompletionCreateParamsStreaming["model"] = 'gpt-5';
+
 export function sendMessage(message: string) {
 	setMessages((p) => [...p, { role: "user", content: message }]);
 	const newStream = chat({
-		model: "gpt-4",
+		model,
 		messages: messages(),
 		stream: true,
-		tools: TOOLS
+		tools: TOOLS,
 	});
 	if (newStream) setStream(newStream);
 }
 
+export function complete() {
+	const newStream = chat({
+		model,
+		messages: messages(),
+		stream: true,
+		tools: TOOLS,
+	});
+	if (newStream) setStream(newStream);
+}
 
 function chat(
 	args: ChatCompletionCreateParamsStreaming,
@@ -80,9 +84,6 @@ function chat(
 		setErr(true);
 	}
 	const processStream = async () => {
-	  type ToolCalls = NonNullable<AssistantMessage['tool_calls']>
-    type ToolCall = ToolCalls[number];
-		type ToolDelta = ChatCompletionChunk.Choice.Delta.ToolCall
 		const toolDeltas: ToolDelta[] = [];
 		const collectToolDeltas = (): ToolCalls | undefined => {
       const toolMap: Record<string, { id: string, function: { name: string, arguments: string } }> = {};
@@ -146,8 +147,3 @@ function chat(
 		stop: stopStream,
 	};
 }
-
-
-[
-  {"role":"user","content":"PMC4136787 Link me this study"},
-  {"role":"assistant","content":"","tool_calls":[{"id":"call_mOclPjEPZrQaEhj6pyurWyFs","type":"function","function":{"name":"read_document","arguments":"{\n  \"id\": \"PMC4136787\"\n}"}}]},{"role":"user","content":"hello"}]

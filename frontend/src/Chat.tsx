@@ -5,8 +5,8 @@ import remarkRehype from 'remark-rehype'
 import {unified} from 'unified'
 import { type AssistantMessage, type ChatMessage } from './server/chat'
 import { on, Show, For, Switch, Match, createSignal, createEffect } from 'solid-js'
-import { apiKey, sendMessage, keyErr, setApiKey, chatStream, chatMessages } from "./server/chat";
-import type { MessageStream } from './server/stream'
+import { ready, apiKey, sendMessage, setApiKey, stream, messages} from "./server/chat";
+import type { MessageStream } from './server/chat'
 
 
 const processor= unified()
@@ -23,7 +23,7 @@ export function Markdown(props: { md: string }) {
 export function Chat() {
   let scrollable: HTMLDivElement | undefined;
 
-  createEffect(on(chatStream, (current, prev) => {
+  createEffect(on(stream, (current, prev) => {
     if (current && !prev && scrollable)
       scrollable.scrollTo(0, scrollable.scrollHeight)
   }));
@@ -36,11 +36,12 @@ export function Chat() {
     <div class="flex justify-center min-h-0 flex-1 overflow-y-auto w-screen items-start scroll-smooth"
       ref={scrollable}
     >
-      <div class="w-[400px] py-2">
-        <ChatMessages messages={chatMessages()}/>
-          <Show when={chatStream()}>
+      <div class="w-[380px] py-2">
+        <ChatMessages messages={messages()}/>
+          <Show when={stream()}>
             {stream=> <ChatStream stream={stream()}/>}
           </Show>
+        <Spinner/>
       </div>
     </div>
     <div class="w-[400px]">
@@ -49,11 +50,44 @@ export function Chat() {
   </div>)
 }
 
+function Spinner() {
+
+  const emptyStream = () => {
+    const s = stream();
+    if (!s) return true;
+    const c = s.data().content;
+    if (c && c.length > 0) {
+      return false;
+    }
+    return true;
+  }
+
+  const [spinner, setSpinner] = createSignal("****");
+  const [i, setI] = createSignal(0);
+  const spin = () => setTimeout(() => {
+    const c = Array.from("****");
+    c[i()] = " ";
+    setSpinner(c.join(""))
+    setI(p => (p + 1) % 4);
+    spin()
+  }, 125)
+  spin()
+
+  return ( <Show when={!ready() && emptyStream()}>
+    <pre class="!text-green-400">
+      [{spinner()}]
+    </pre>
+  </Show>
+  )
+}
+
 function ChatInput() {
   const [input, setInput] = createSignal("");
   const send = () => {
-    sendMessage(input())
-    setInput("");
+    if (ready() && input().length > 0) {
+      sendMessage(input())
+      setInput("");
+    }
   }
   return(
   <div class="flex border border-green-400 w-[400px] items-end flex-0">
@@ -70,7 +104,7 @@ function ChatInput() {
       }}
 
     />
-    <div class="px-1 hover:bg-green-400/20"
+    <div class="px-2 -pb-1 hover:bg-green-400/20"
       onClick={send}
     >
       <UpArrow/>
@@ -107,8 +141,18 @@ function ChatStream(props: {stream: MessageStream<AssistantMessage>}) {
 }
 
 function AssistantMessageComponent(props: { message: AssistantMessage }) {
-  return (<div class="assistant-message max-w-4/5 px-2 py-1 text-sm">
-    <Markdown md={props.message.content} />
+  return (
+    <div class="assistant-message max-w-4/5 text-sm">
+      <Show when={typeof props.message.content === "string" && props.message.content}>
+        {text =>
+          <Markdown md={text()} />
+        }
+      </Show>
+      <For each={props.message.tool_calls ?? []}>
+        {call => {
+
+        }}
+      </For>
   </div>);
 }
 
@@ -122,7 +166,7 @@ function ChatMessages(props: { messages: ChatMessage[] }) {
           <Match when={message.role === "user"}>
             <div class="flex justify-end">
               <div class="max-w-4/5 bg-green-400/20 px-2 py-1">
-                  <Markdown md={message.content} />
+                <Markdown md={message.content} />
               </div>
             </div>
           </Match>
@@ -141,15 +185,8 @@ function ChatMessages(props: { messages: ChatMessage[] }) {
 
 function UpArrow() {
   return (
-    <svg
-      class="text-green-400"
-      fill="currentColor"
-      stroke-width="0"
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 16 16"
-      height="24px"
-      width="24px">
-      <path fill-rule="evenodd" d="m8.024 5.928-4.357 4.357-.62-.618L7.716 5h.618L13 9.667l-.619.618-4.357-4.357z" clip-rule="evenodd"></path>
-    </svg>
+    <pre class="!text-green-400 select-none text-xl">
+     ^
+    </pre>
   )
 }

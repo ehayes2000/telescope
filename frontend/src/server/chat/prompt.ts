@@ -4,7 +4,7 @@ export const TOOLS: ChatCompletionTool[] = [
   {
     function: {
       name: "search",
-      description: "A keyword search tool to find document metadata. Use many specific searches for best results. Each search should be no more than 3 words",
+      description: "A keyword search tool to find study metadata. Use many specific search query strings for best results. Each search should be no more than 3 words",
       parameters: {
         type: "object",
         properties: {
@@ -50,4 +50,6 @@ Never state information about a study that is not in your system prompt or your 
 ***Always Format your answers in valid markdown***
 If you have a study ID you can link studies to users by appending their id to this url
 https://pmc.ncbi.nlm.nih.gov/articles/<document_id>/
+
+If you use study in your answer always link it using valid markdown link syntax [text](url)
 `;
