@@ -2,7 +2,7 @@ import OpenAI from "openai";
 import type { ChatCompletionCreateParamsStreaming } from "openai/resources.js";
 import { createEffect, createSignal } from "solid-js";
 import type { MessageStream } from "./stream";
-import { SYSTEM_PROMPT, TOOLS } from "./prompt";
+import { TOOLS } from "./prompt";
 import type { ChatCompletionChunk } from "openai/resources";
 
 export type ChatMessage =

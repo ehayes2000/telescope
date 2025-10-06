@@ -156,6 +156,7 @@ function AssistantMessageComponent(props: { message: AssistantMessage }) {
 }
 
 function ToolResponseMessage(props: { message: ToolMessage }) {
+  //@ts-ignore
   const count = (props.message.content?.match(/"id": /g) || []).length ?? 0
   return <div class="text-sm !text-green-400 font-mono">
     Found [{ count }] Studies
@@ -172,6 +173,7 @@ function ChatMessages(props: { messages: ChatMessage[] }) {
           <Match when={message.role === "user"}>
             <div class="flex justify-end">
               <div class="max-w-4/5 bg-green-400/20 px-2 py-1">
+                {/*@ts-ignore*/}
                 <Markdown md={message.content} />
               </div>
             </div>

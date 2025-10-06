@@ -13,10 +13,6 @@ type SearchTool = {
   queries: string[]
 }
 
-type ReadTool = {
-  id: string
-}
-
 // this is not checked :)
 function asJson<T>(id: string, s: string): Result<T, ToolMessage>{
   try {
@@ -63,14 +59,6 @@ async function handleSearch(tool: { id: string, args: SearchTool}): Promise<Tool
     role: 'tool',
     tool_call_id: tool.id
   };
-}
-
-async function handleRead(tool: { id: string, args: ReadTool}): Promise<ToolMessage> {
-  return {
-    role:"tool",
-    content: "Read tool is broken",
-    tool_call_id: tool.id
-  }
 }
 
 function ToolCallError(props: {name?: string}) {

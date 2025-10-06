@@ -1,7 +1,7 @@
 import { makePersisted } from "@solid-primitives/storage";
 import {  createSignal } from "solid-js";
 import type { MessageStream } from "./stream";
-import { SYSTEM_PROMPT, TOOLS } from "./prompt";
+import { SYSTEM_PROMPT } from "./prompt";
 import type { ChatCompletionCreateParamsStreaming } from "openai/resources.js";
 import { scrubBadToolCalls } from "./util";
 
