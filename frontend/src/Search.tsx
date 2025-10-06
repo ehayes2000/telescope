@@ -33,7 +33,9 @@ function Search() {
 			<input
 				type="text"
 				placeholder="Search"
-				class="border border-green-400 px-2 py-1 focus:outline-none w-[400px] text-sm"
+				class="border border-green-400 px-2 py-1 focus:outline-none w-[400px] text-sm
+				placeholder:!text-green-400/20 placeholder:font-mono
+				"
 				onKeyUp={(e) => debouncedSearch({ phrase: e.currentTarget.value })}
 			/>
 		</div>
@@ -81,7 +83,7 @@ function FoundDoc(props: { document: Document }) {
 	);
 	return (
 		<div
-			class="border border-green-400 py-1 px-2 max-w-[400px] flex flex-col gap-1 hover:bg-green-400/20"
+			class="border border-green-400 py-1 px-2 max-w-[400px] min-w-[400px] flex flex-col gap-1 hover:bg-green-400/20"
 			onClick={() => window.open(`https://pmc.ncbi.nlm.nih.gov/articles/${props.document.id}/`)}
 		>
 			<h1 class="text-lg text-wrap px-1">{props.document.metadata.title}</h1>

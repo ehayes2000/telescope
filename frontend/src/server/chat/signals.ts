@@ -30,6 +30,7 @@ export const [messages, setMessages] = makePersisted(createSignal<ChatMessage[]>
 
 
 
+
 export const [processingTools, setProcessing] = createSignal(false);
 
 export const ready = () => {
