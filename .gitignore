@@ -1,4 +1,4 @@
 .DS_Store
 backend/scripts/out
-backend/search_index
+backend/search_index/raw/
 backend/target
