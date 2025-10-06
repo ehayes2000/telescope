@@ -4,6 +4,8 @@ import { type Result, ok, err } from "../../types";
 import { setMessages, stream, setProcessing } from "./signals";
 import { createEffect } from "solid-js";
 import {type AssistantMessage, type ToolMessage, type ToolCall, complete } from "./chat";
+import { readFile } from "../text";
+
 import {
   search,
   type Document,
@@ -11,6 +13,10 @@ import {
 
 type SearchTool = {
   queries: string[]
+}
+
+type ReadTool = {
+  id: string
 }
 
 // this is not checked :)
@@ -27,6 +33,22 @@ function asJson<T>(id: string, s: string): Result<T, ToolMessage>{
     )
   }
 }
+
+async function handleRead(tool: {id: string, args: ReadTool }): Promise<ToolMessage> {
+  const text = await readFile(tool.id);
+  if (!text)
+    return {
+      role: "tool",
+      content: "Error reading text",
+        tool_call_id: tool.id
+    }
+  return {
+    role: "tool",
+    content: text,
+    tool_call_id: tool.id
+  }
+}
+
 
 async function handleSearch(tool: { id: string, args: SearchTool}): Promise<ToolMessage> {
   const searches = tool.args.queries.map(query =>
@@ -80,6 +102,16 @@ const RenderSearchTool: ToolRenderer = (props) => {
   </div>
 }
 
+const RenderReadTool: ToolRenderer = (props) => {
+    const args = asJson<ReadTool>(props.id, props.function.arguments);
+    if (args.type === "err") {
+      return <ToolCallError name="read"/>
+    }
+    return <div class="text-sm !text-green-400 font-mono">
+      Reading {args.data.id}
+    </div>
+}
+
 type ToolHandler = (c: Extract<ToolCall, {type: "function"}>) => Promise<ToolMessage>;
 type ToolRenderer = Component<Extract<ToolCall, { type: "function" }>>;
 
@@ -96,7 +128,19 @@ const tools: Record<string, {
       return await handleSearch({args: args.data, id: call.id})
     },
     render: RenderSearchTool
+  },
+  //@ts-ignore
+  read_document: {
+    handle: async (call) => {
+      const args = asJson<ReadTool>(call.id, call.function.arguments)
+      if (args.type === "err") {
+        return args.err
+      }
+      return await handleRead({args: args.data, id: call.id})
+    },
+    render: RenderReadTool
   }
+
 }
 
 export function RenderToolCall(props: {tool: ToolCall}) {

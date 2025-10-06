@@ -2,3 +2,4 @@
 backend/scripts/out
 backend/search_index/raw/
 backend/target
+.env

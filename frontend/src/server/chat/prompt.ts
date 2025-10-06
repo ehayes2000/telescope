@@ -23,25 +23,25 @@ export const TOOLS: ChatCompletionTool[] = [
     },
     type: "function"
   },
-  // {
-  //   function: {
-  //     name: "read_document",
-  //     description: "Read the full content of a document by its ID",
-  //     parameters: {
-  //       type: "object",
-  //       properties: {
-  //         id: {
-  //           type: "string",
-  //           description: "The document ID to read"
-  //         }
-  //       },
-  //       required: ["id"],
-  //       additionalProperties: false
-  //     },
-  //     strict: true
-  //   },
-  //   type: "function"
-  // }
+  {
+    function: {
+      name: "read_document",
+      description: "Read the full content of a document by its ID, don't read many documents they are big. Only read when necessary",
+      parameters: {
+        type: "object",
+        properties: {
+          id: {
+            type: "string",
+            description: "The document ID to read"
+          }
+        },
+        required: ["id"],
+        additionalProperties: false
+      },
+      strict: true
+    },
+    type: "function"
+  }
 ] as const;
 
 export const SYSTEM_PROMPT = `You are a helpful research assistant. You have access to tools to help people search studies.

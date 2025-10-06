@@ -164,12 +164,11 @@ function AssistantMessageComponent(props: { message: AssistantMessage }) {
   </div>);
 }
 
-function ToolResponseMessage(props: { message: ToolMessage }) {
-  //@ts-ignore
-  const count = (props.message.content?.match(/"id": /g) || []).length ?? 0
-  return <div class="text-sm !text-green-400 font-mono">
-    Found [{ count }] Studies
-  </div>
+function ToolResponseMessage(_: { message: ToolMessage }) {
+ return(
+  <div class="text-sm !text-green-400 font-mono">
+    Done
+  </div>)
 }
 
 
