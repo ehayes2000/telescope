@@ -7,7 +7,7 @@ export async function readFile(id: string): Promise<string | undefined> {
     const response = await fetch(`${BASE_URL}/api/text?id=${id}`);
     if (!response.ok) return
     const text = await response.text();
-    return "TEST TEXT"
+    return text;
   } catch (e) {
     return
   }

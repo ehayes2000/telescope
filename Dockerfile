@@ -1,4 +1,4 @@
-FROM rust:1.89 AS backend-builder
+FROM rust:1.90-bookworm AS backend-builder
 
 WORKDIR /app
 
